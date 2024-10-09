@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "pqf"
+version = "0.0.1"
+package-mode = true
+description = "Python Quant Finance Library"
+authors = ["RobertLD <rlderienzo@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pandas = "^2.2.3"
+polars = "^1.9.0"
+
+[tool.poetry.group.dev]
+optional = true
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^6.0.0"
+pytest-mock = "*"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+
