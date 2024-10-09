@@ -1,8 +1,8 @@
 import polars as pl
 import polars.testing as plt
 
-from pqf.indicators.momentum import macd, rsi
-from pqf.indicators.util import apply_expr_to_series
+from pqf.indicator.momentum import macd, rsi
+from pqf.indicator.util import apply_expr_to_series
 
 
 class TestRsi:

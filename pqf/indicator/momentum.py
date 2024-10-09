@@ -1,6 +1,6 @@
 import polars as pl
 
-from pqf.indicators.moving_average import exponential_moving_average
+from pqf.indicator.moving_average import exponential_moving_average
 
 
 def rsi(data: pl.Series | pl.Expr, period: int) -> pl.Series | pl.Expr:

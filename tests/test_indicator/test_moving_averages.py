@@ -1,7 +1,7 @@
 import polars as pl
 import polars.testing as plt
 
-from pqf.indicators.moving_average import (
+from pqf.indicator.moving_average import (
     exponential_moving_average,
     simple_moving_average,
 )

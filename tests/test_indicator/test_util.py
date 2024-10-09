@@ -1,7 +1,7 @@
 import polars as pl
 import polars.testing as plt
 
-from pqf.indicators.util import apply_expr_to_series
+from pqf.indicator.util import apply_expr_to_series
 
 
 class TestUtil:
