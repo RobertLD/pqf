@@ -18,6 +18,7 @@ optional = true
 pytest = "^6.0.0"
 ruff = "^0.6.9"
 pytest-mock = "*"
+pre-commit = "^4.0.1"
 
 
 [build-system]
