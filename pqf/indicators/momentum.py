@@ -1,5 +1,7 @@
 import polars as pl
 
+from pqf.indicators.moving_average import exponential_moving_average
+
 
 def rsi(data: pl.Series | pl.Expr, period: int) -> pl.Series | pl.Expr:
     rsi_expr = (
@@ -28,3 +30,18 @@ def rsi(data: pl.Series | pl.Expr, period: int) -> pl.Series | pl.Expr:
     price_data = pl.LazyFrame(data)
     rsi_data = price_data.select(rsi_expr.alias(data.name))
     return rsi_data.collect().to_series()
+
+
+def macd(
+    data: pl.Series | pl.Expr,
+    slow_period: int = 26,
+    fast_period: int = 12,
+    signal_period: int = 9,
+) -> pl.Series | pl.Expr:
+    fast_ema = exponential_moving_average(data, fast_period)
+    slow_ema = exponential_moving_average(data, slow_period)
+
+    macd = fast_ema - slow_ema
+    macd_signal = exponential_moving_average(macd, signal_period)
+    macd_hist = macd - macd_signal
+    return macd_hist
