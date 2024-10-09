@@ -7,7 +7,7 @@ RUN apt-get update && \
 RUN python3 -m pip install --user pipx && \
     python3 -m pipx ensurepath
 
-RUN  pipx ensurepath --global
+RUN pipx ensurepath --global
 
 RUN pipx install poetry
 
