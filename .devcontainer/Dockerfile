@@ -12,5 +12,3 @@ RUN pipx ensurepath --global
 RUN pipx install poetry
 
 RUN poetry completions bash >> ~/.bash_completion
-
-RUN poetry install --with dev && poetry run pre-commit install
