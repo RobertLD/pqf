@@ -27,13 +27,19 @@ pre-commit = "^4.0.1"
 testpaths = ["tests"]
 
 [tool.pyright]
-include = ["pqf/**"]
-ignore = ["**/typings"]
-exclude = [".*", "__*", "**/tpings"]
+ignore = [
+    "**/typings",
+    '.cache/*',
+    ".*",
+    "__*",
+    "**/typings",
+    '**/.cache/**/*',
+    "**/pypoetry/**/*",
+]
+exclude = [".*", "__*", "**/typings", '**/.cache/**/*', "**/pypoetry/**/*"]
 
 typeCheckingMode = "basic"
 stubPath = "typings"
-typeshedPath = "typings"
 pythonPlatform = "Linux"
 
 reportMissingModuleSource = "none"
