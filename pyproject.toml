@@ -11,6 +11,7 @@ python = "^3.10"
 pandas = "^2.2.3"
 polars = "^1.9.0"
 numba = "^0.60.0"
+pyright = "^1.1.384"
 
 [tool.poetry.group.dev]
 optional = true
@@ -21,9 +22,28 @@ ruff = "^0.6.9"
 pytest-mock = "*"
 pre-commit = "^4.0.1"
 
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.pyright]
+include = ["pqf/**"]
+ignore = ["**/typings"]
+exclude = [".*", "__*", "**/tpings"]
+
+typeCheckingMode = "basic"
+stubPath = "typings"
+typeshedPath = "typings"
+pythonPlatform = "Linux"
+
+reportMissingModuleSource = "none"
+reportUnnecessaryTypeIgnoreComment = "error"
+reportPrivateImportUsage = false
+reportUndefinedVariable = false
+
+[tool.ruff]
+fix = true
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-
-[tool.pytest.ini_options]
-pythonpath = ["."]
