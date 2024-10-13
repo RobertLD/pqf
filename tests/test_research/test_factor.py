@@ -3,7 +3,7 @@ from datetime import datetime
 import polars as pl
 import polars.testing as plt
 
-from pqf.research.alpha import simple_factor_returns
+from pqf.research.factor import simple_factor_returns
 
 
 class TestFactorReturns:

@@ -10,6 +10,15 @@ class FactorAssetPair(NamedTuple):
     asset: str
 
 
+def get_factor_asset_permutations(
+    factors: list[str], assets: list[str]
+) -> list[FactorAssetPair]:
+    return [
+        FactorAssetPair(factor, asset)
+        for factor, asset in itertools.product(factors, assets)
+    ]
+
+
 def simple_factor_exposure(
     factors: pl.LazyFrame, factor_names: list[str]
 ) -> pl.LazyFrame:
@@ -22,15 +31,6 @@ def simple_factor_exposure(
             for factor in factor_names
         ]
     )
-
-
-def get_factor_asset_permutations(
-    factors: list[str], assets: list[str]
-) -> list[FactorAssetPair]:
-    return [
-        FactorAssetPair(factor, asset)
-        for factor, asset in itertools.product(factors, assets)
-    ]
 
 
 def simple_factor_returns(
