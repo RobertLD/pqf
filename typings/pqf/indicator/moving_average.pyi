@@ -1,6 +1,7 @@
-from typing import overload
+from typing import TYPE_CHECKING, overload
 
-import polars as pl
+if TYPE_CHECKING:
+    import polars as pl
 
 @overload
 def simple_moving_average(prices: pl.Series, window_size: int) -> pl.Series: ...
