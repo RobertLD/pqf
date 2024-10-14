@@ -2,6 +2,9 @@
 
 PQF is designed to provide a comprehensive suite of indicators, research tools, and statistical measures for quantitative finance. Built on the Polars library, enabling fast data manipulation and computation.
 
+### Documentation
+https://robertld.github.io/pqf/
+
 ## Contributing
 
 Follow these steps to set up your development environment using the provided devcontainer:
