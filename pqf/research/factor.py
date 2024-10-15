@@ -10,7 +10,7 @@ class FactorAssetPair(NamedTuple):
     asset: str
 
 
-def simple_factor_returns(
+def simple_factor_long_short_return(
     factors: pl.LazyFrame,
     returns: pl.LazyFrame,
     date_column: str,
@@ -58,3 +58,7 @@ def _simple_factor_exposure(
             for factor in factor_names
         ]
     )
+
+
+def factor_quality(factor_exposure: pl.Series, returns: pl.Series) -> float:
+    return pl.LazyFrame().select(pl.corr(factor_exposure, returns)).collect().item()

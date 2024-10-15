@@ -2,7 +2,7 @@ import polars as pl
 import pytest
 
 from pqf.indicator.util import apply_expr_to_series
-from pqf.research.statistics import sharpe_ratio
+from pqf.research.statistics import sharpe_ratio, information_coef
 
 
 class TestSharpeRatio:
@@ -29,3 +29,17 @@ class TestSharpeRatio:
         result_expr = sharpe_ratio(pl.col("*"), risk_free_rate)
         result = apply_expr_to_series(returns, result_expr).item()
         assert result == pytest.approx(expected_result)
+
+
+class TestInformationCoef:
+    def test_information_coef_with_highly_correlated_series(self):
+        prices = pl.Series([1, 2, 3, 4])
+        factor = pl.Series([2, 4, 8, 16])
+        ic = information_coef(prices, factor)
+        assert ic == pytest.approx(0.95916, rel=0.001)
+
+    def test_information_coef_with_highly_inverse_correlated_series(self):
+        prices = pl.Series([1, 2, 3, 4])
+        factor = pl.Series([-2, -4, -8, -16])
+        ic = information_coef(prices, factor)
+        assert abs(ic) == pytest.approx(0.95916, rel=0.001)

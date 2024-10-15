@@ -25,3 +25,9 @@ def sharpe_ratio(
             .truediv(excess_returns.std().cast(pl.Float64))
         )
     return sharpe
+
+
+def information_coef(potential_fac_exposure: pl.Series, returns: pl.Series) -> float:
+    return (
+        pl.LazyFrame().select(pl.corr(potential_fac_exposure, returns)).collect().item()
+    )

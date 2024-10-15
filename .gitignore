@@ -156,3 +156,4 @@ cython_debug/
 
 # ruff
 .ruff_cache
+research/notebooks/**/* */
