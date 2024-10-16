@@ -5,13 +5,17 @@ import polars.selectors as cs
 def sharpe_ratio(
     returns: pl.Series | pl.Expr, risk_free_rate: float
 ) -> float | pl.Expr | None:
-    """Calculate the Sharpe ratio for a given series of returns and a risk-free rate.
+    """Calculate the Sharpe ratio.
 
-    :param returns: A polars Series or Expression representing the returns.
-    :param risk_free_rate: The risk-free rate used in the calculation.
+    Args:
+        returns (pl.Series | pl.Expr): Series or expression representing returns.
+        risk_free_rate (float): The risk-free rate.
 
-    :return: The Sharpe ratio value as a float, Expression, or None if the calculation is not possible.
-    :rtype: float | pl.Expr | None
+    Raises:
+        TypeError: If standard deviation of returns cannot be calculated.
+
+    Returns:
+        float | pl.Expr | None: The calculated Sharpe ratio or None if not calculable.
     """
     if isinstance(returns, pl.Series):
         excess_returns = returns - risk_free_rate
@@ -39,6 +43,15 @@ def sharpe_ratio(
 def estimate_market_returns(
     market_constituent_returns: pl.LazyFrame | pl.DataFrame, date_column: str
 ) -> pl.LazyFrame | pl.DataFrame:
+    """Estimate the market returns based on the constituent returns.
+
+    Args:
+        market_constituent_returns (pl.LazyFrame | pl.DataFrame): DataFrame containing constituent returns.
+        date_column (str): Name of the column containing dates.
+
+    Returns:
+        pl.LazyFrame | pl.DataFrame: DataFrame with selected date column and calculated market return.
+    """
     return market_constituent_returns.select(
         pl.col(date_column), pl.mean_horizontal(cs.float()).alias("market_return")
     )
