@@ -156,3 +156,5 @@ cython_debug/
 
 # ruff
 .ruff_cache
+
+**/generated/*
