@@ -16,7 +16,7 @@ jobs:
       id-token: write
     steps:
     - id: install_dev_deps
-      run: poetry install --with dev
+      run: pip install poetry && poetry install --with dev
     - id: deployment
       uses: sphinx-notes/pages@v3
       with:
