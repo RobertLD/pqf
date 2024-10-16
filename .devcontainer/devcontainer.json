@@ -12,8 +12,16 @@
 				"ms-python.python",
 				"ms-python.debugpy",
 				"tamasfe.even-better-toml",
-				"charliermarsh.ruff"
-			]
+				"charliermarsh.ruff",
+				"njpwerner.autodocstring"
+			],
+			"[python]": {
+				"editor.formatOnSave": true,
+				"editor.defaultFormatter": "charliermarsh.ruff",
+				"editor.codeActionsOnSave": {
+					"source.fixAll": "explicit"
+				}
+			}
 		}
 	},
 	"postCreateCommand": "poetry install --with dev && poetry run pre-commit install"
