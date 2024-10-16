@@ -15,7 +15,13 @@ jobs:
       pages: write
       id-token: write
     steps:
-    - id: install_dev_deps
+    
+    - id: checkout_repo_deps
+      uses: actions/checkout@v4
+      with:
+        sparse-checkout: |
+          pyproject.toml
+    - id: install_deps
       run: pip install poetry && poetry install --with dev
     - id: deployment
       uses: sphinx-notes/pages@v3
