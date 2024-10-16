@@ -21,8 +21,15 @@ jobs:
       with:
         sparse-checkout: |
           pyproject.toml
+          
+    - id: setup_python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12' 
+        
     - id: install_deps
       run: pip install poetry && poetry install --with dev
+      
     - id: deployment
       uses: sphinx-notes/pages@v3
       with:
