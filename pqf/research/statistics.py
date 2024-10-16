@@ -4,6 +4,14 @@ import polars as pl
 def sharpe_ratio(
     returns: pl.Series | pl.Expr, risk_free_rate: float
 ) -> float | pl.Expr | None:
+    """Calculate the Sharpe ratio for a given series of returns and a risk-free rate.
+
+    :param returns: A polars Series or Expression representing the returns.
+    :param risk_free_rate: The risk-free rate used in the calculation.
+
+    :return: The Sharpe ratio value as a float, Expression, or None if the calculation is not possible.
+    :rtype: float | pl.Expr | None
+    """
     if isinstance(returns, pl.Series):
         excess_returns = returns - risk_free_rate
         mean_return = excess_returns.mean()
