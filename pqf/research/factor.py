@@ -6,6 +6,8 @@ import polars.selectors as cs
 
 
 class FactorAssetPair(NamedTuple):
+    """Pair between a factor and an asset."""
+
     factor: str
     asset: str
 
@@ -16,6 +18,17 @@ def simple_factor_returns(
     date_column: str,
     cumulative: bool = False,
 ) -> pl.LazyFrame:
+    """Calculates factor returns based on factor exposures and asset returns.
+
+    Args:
+        factors (pl.LazyFrame): DataFrame containing factor data.
+        returns (pl.LazyFrame): DataFrame containing asset returns data.
+        date_column (str): Name of the column representing dates.
+        cumulative (bool, optional): Flag to calculate cumulative returns. Defaults to False.
+
+    Returns:
+        pl.LazyFrame: DataFrame with factor returns calculated.
+    """
     factor_columns = factors.select(cs.float()).columns
 
     factor_exposure = _simple_factor_exposure(factors, factor_columns)
