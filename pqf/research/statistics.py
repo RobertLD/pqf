@@ -1,4 +1,5 @@
 import polars as pl
+import polars.selectors as cs
 
 
 def sharpe_ratio(
@@ -33,3 +34,11 @@ def sharpe_ratio(
             .truediv(excess_returns.std().cast(pl.Float64))
         )
     return sharpe
+
+
+def estimate_market_returns(
+    market_constituent_returns: pl.LazyFrame | pl.DataFrame, date_column: str
+) -> pl.LazyFrame | pl.DataFrame:
+    return market_constituent_returns.select(
+        pl.col(date_column), pl.mean_horizontal(cs.float()).alias("market_return")
+    )
