@@ -158,3 +158,4 @@ cython_debug/
 .ruff_cache
 
 **/generated/*
+docs/index.rst
