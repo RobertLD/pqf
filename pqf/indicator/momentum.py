@@ -4,6 +4,15 @@ from pqf.indicator.moving_average import exponential_moving_average
 
 
 def rsi(data: pl.Series | pl.Expr, period: int) -> pl.Series | pl.Expr:
+    """Calculate the Relative Strength Index (RSI) for the given data series over a specified period.
+
+    Args:
+        data(pl.Series | pl.Expr): A Polars Series or Expression containing the data for which RSI needs to be calculated.
+        period (int): An integer specifying the period for RSI calculation.
+
+    Returns:
+        pl.Series | pl.Expr: A Polars Series or Expression representing the RSI values calculated based on the input data and period.
+    """
     rsi_expr = (
         pl.lit(100)
         - (
@@ -38,6 +47,17 @@ def macd(
     fast_period: int = 12,
     signal_period: int = 9,
 ) -> pl.Series | pl.Expr:
+    """Calculate the Moving Average Convergence Divergence (MACD) indicator.
+
+    Args:
+        data (pl.Series | pl.Expr): Time series data for calculation.
+        slow_period (int, optional): Number of periods for the slow EMA. Defaults to 26.
+        fast_period (int, optional): Number of periods for the fast EMA. Defaults to 12.
+        signal_period (int, optional): Number of periods for the signal line. Defaults to 9.
+
+    Returns:
+        pl.Series | pl.Expr: The MACD histogram values.
+    """
     fast_ema = exponential_moving_average(data, fast_period)
     slow_ema = exponential_moving_average(data, slow_period)
 
