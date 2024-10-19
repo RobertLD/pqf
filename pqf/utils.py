@@ -1,6 +1,36 @@
 import polars as pl
 
 
+def zscore_normalize(v: pl.Series | pl.Expr) -> pl.Series | pl.Expr:
+    """Normalize input array by demeaning and dividing by std
+
+    Args:
+        v (pl.Series | pl.Expr): Input data to normalize
+
+    Returns:
+        pl.Series | pl.Expr: Normalized vector
+    """
+    if isinstance(v, pl.Expr):
+        return v.sub(v.mean()).truediv(v.std())
+    else:
+        return (v - v.mean()) / v.std()
+
+
+def minmax_normalize(v: pl.Series | pl.Expr) -> pl.Series | pl.Expr:
+    """Normalize input array by min and max of vector.
+
+    Args:
+        v (pl.Series | pl.Expr): Input data to normalize
+
+    Returns:
+        pl.Series | pl.Expr: Normalized vector
+    """
+    if isinstance(v, pl.Expr):
+        return v.sub(v.min()).truediv(v.max() - v.min())
+    else:
+        return (v - v.min()) / (v.max() - v.min())
+
+
 def forward_returns(
     prices: pl.LazyFrame | pl.DataFrame,
     date_column: str,
