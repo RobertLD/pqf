@@ -55,3 +55,37 @@ def estimate_market_returns(
     return market_constituent_returns.select(
         pl.col(date_column), pl.mean_horizontal(cs.float()).alias("market_return")
     )
+
+
+def information_coefficient(
+    date_column: str,
+    returns_column: str,
+    returns: pl.LazyFrame,
+    factors: list[str],
+    factor_returns: pl.LazyFrame,
+    window_size: int = 5,
+) -> pl.LazyFrame:
+    """Calculate the rolling information coefficient for a set of factors against a benchmark return over a window size.
+
+    Args:
+        date_column (str): Datetime index column name
+        returns_column (str): Column name containing benchmark returns
+        returns (pl.LazyFrame): Lazyframe containing returns
+        factors (list[str]): A list of factor column names
+        factor_returns (pl.LazyFrame): Lazyframe containing factor returns
+        window_size (int, optional): Rolling window size. Defaults to 5.
+
+    Returns:
+        pl.Lazyframe: Rolling IC for the set of factors against the benchmark
+    """
+    ic_exprs = [
+        pl.col(f)
+        .rolling(index=date_column, period=f"{window_size}i")
+        .agg(pl.corr(pl.col(f), pl.col(returns_column)))
+        .name.suffix("_IC")
+        for f in factors
+    ]
+    ic = returns.join(factor_returns, on=pl.col(date_column)).select(
+        pl.col(date_column), *ic_exprs
+    )
+    return ic
