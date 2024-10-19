@@ -36,13 +36,13 @@ def mean_factor_returns_by_quantile(
     return factor_quantiles
 
 
-def simple_factor_returns(
+def simple_factor_long_short_returns(
     factors: pl.LazyFrame,
     returns: pl.LazyFrame,
     date_column: str,
     cumulative: bool = False,
 ) -> pl.LazyFrame:
-    """Calculates factor returns based on factor exposures and asset returns.
+    """Calculates factor portfolio return based on factor quantiles and asset returns.
 
     Args:
         factors (pl.LazyFrame): DataFrame containing factor data.
