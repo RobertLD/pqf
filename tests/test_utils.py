@@ -1,6 +1,8 @@
+from datetime import datetime
+
 import polars as pl
 import polars.testing as plt
-from datetime import datetime
+
 from pqf.utils import forward_returns
 
 

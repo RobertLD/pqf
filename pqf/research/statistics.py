@@ -60,11 +60,11 @@ def estimate_market_returns(
 def information_coefficient(
     date_column: str,
     returns_column: str,
-    returns: pl.LazyFrame,
+    returns: pl.LazyFrame | pl.DataFrame,
     factors: list[str],
-    factor_returns: pl.LazyFrame,
+    factor_returns: pl.LazyFrame | pl.DataFrame,
     window_size: int = 5,
-) -> pl.LazyFrame:
+) -> pl.LazyFrame | pl.DataFrame:
     """Calculate the rolling information coefficient for a set of factors against a benchmark return over a window size.
 
     Args:
@@ -78,11 +78,15 @@ def information_coefficient(
     Returns:
         pl.Lazyframe: Rolling IC for the set of factors against the benchmark
     """
+    if isinstance(factors, str):
+        factors = [factors]
     ic_exprs = [
-        pl.col(f)
-        .rolling(index=date_column, period=f"{window_size}i")
-        .agg(pl.corr(pl.col(f), pl.col(returns_column)))
-        .name.suffix("_IC")
+        pl.rolling_corr(
+            pl.col(f),
+            pl.col(returns_column),
+            window_size=window_size,
+            min_periods=1,
+        ).name.suffix("_IC")
         for f in factors
     ]
     ic = returns.join(factor_returns, on=pl.col(date_column)).select(
