@@ -3,7 +3,10 @@ from datetime import datetime
 import polars as pl
 import polars.testing as plt
 
-from pqf.research.factor import mean_factor_returns_by_quantile, simple_factor_returns
+from pqf.research.factor import (
+    mean_factor_returns_by_quantile,
+    simple_factor_long_short_returns,
+)
 
 
 class TestFactorReturns:
@@ -38,7 +41,9 @@ class TestFactorReturns:
             ],
             schema=["timestamp", "BTC"],
         ).lazy()
-        factor_return_df = simple_factor_returns(factor, returns, "timestamp")
+        factor_return_df = simple_factor_long_short_returns(
+            factor, returns, "timestamp"
+        )
         factor_returns = (
             factor_return_df.collect().select("BTC_factor_return").to_series()
         )
@@ -80,7 +85,9 @@ class TestFactorReturns:
             ],
             schema=["timestamp", "BTC", "ETH"],
         ).lazy()
-        factor_return_df = simple_factor_returns(factor, returns, "timestamp")
+        factor_return_df = simple_factor_long_short_returns(
+            factor, returns, "timestamp"
+        )
         factor_returns = factor_return_df.collect()
 
         expected_returns = pl.DataFrame(
@@ -131,7 +138,7 @@ class TestFactorReturns:
             ],
             schema=["timestamp", "BTC"],
         ).lazy()
-        factor_return_df = simple_factor_returns(
+        factor_return_df = simple_factor_long_short_returns(
             factor, returns, "timestamp", cumulative=True
         )
         factor_returns = (
