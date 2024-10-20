@@ -55,3 +55,36 @@ def estimate_market_returns(
     return market_constituent_returns.select(
         pl.col(date_column), pl.mean_horizontal(cs.float()).alias("market_return")
     )
+
+
+def annualized_return(returns: pl.Series | pl.Expr) -> pl.Series | pl.Expr | None:
+    """
+    Calculate the annualized return from a series of daily log returns.
+
+    The annualized return is calculated using the formula:
+        e^(sum of log returns * 365 / period of days) - 1
+
+    Args:
+        returns (pl.Series | pl.Expr): Series or expression representing daily log returns.
+
+    Returns:
+        float | pl.Expr | None: A series of the cumulative annualized returns or None if not calculable.
+    """
+
+    if isinstance(returns, pl.Series):
+        period = returns.count()
+        if period <= 1:
+            return None
+
+        cumulative_log_returns = returns.cum_sum()
+
+        annualization_factor = (365) / period
+        annualized = (cumulative_log_returns * annualization_factor).exp() - 1
+
+    else:
+        period_expr = returns.count()
+        annualized = (
+            returns.cum_sum().mul(pl.lit(365).truediv(period_expr)).exp().sub(1)
+        )
+
+    return annualized
