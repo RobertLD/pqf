@@ -68,7 +68,7 @@ def annualized_return(returns: pl.Series | pl.Expr) -> pl.Series | pl.Expr | Non
         returns (pl.Series | pl.Expr): Series or expression representing daily log returns.
 
     Returns:
-        float | pl.Expr | None: A series of the cumulative annualized returns or None if not calculable.
+        pl.Series | pl.Expr | None: A series of the cumulative annualized returns or None if not calculable.
     """
 
     if isinstance(returns, pl.Series):
