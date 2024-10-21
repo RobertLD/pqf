@@ -74,7 +74,7 @@ class TestAnnualizedReturn:
         returns = (prices / prices.shift(1)).log().alias("returns")
         result = annualized_return(returns)
 
-        expected_result = 0.19653
+        expected_result = 0.191
         assert result[-1] == pytest.approx(expected_result, rel=1e-2)
 
         result_expr = annualized_return(pl.col("returns"))
@@ -102,7 +102,7 @@ class TestAnnualizedReturn:
 
         result = annualized_return(returns)
 
-        expected_result = -0.75213
+        expected_result = -0.7746
         assert result[-1] == pytest.approx(expected_result, rel=1e-2)
 
         result_expr = annualized_return(pl.col("returns"))

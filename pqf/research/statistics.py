@@ -78,7 +78,7 @@ def annualized_return(returns: pl.Series | pl.Expr) -> pl.Series | pl.Expr | Non
 
         cumulative_log_returns = returns.cum_sum()
 
-        annualization_factor = (365) / period
+        annualization_factor = 365 / period
         annualized = (cumulative_log_returns * annualization_factor).exp() - 1
 
     else:
