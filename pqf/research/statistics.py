@@ -57,7 +57,7 @@ def estimate_market_returns(
     )
 
 
-def annualized_return(returns: pl.Series | pl.Expr) -> pl.Series | pl.Expr | None:
+def annualized_returns(returns: pl.Series | pl.Expr) -> pl.Series | pl.Expr | None:
     """
     Calculate the annualized return from a series of daily log returns.
 
