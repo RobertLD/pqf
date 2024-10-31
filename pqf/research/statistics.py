@@ -40,6 +40,48 @@ def sharpe_ratio(
     return sharpe
 
 
+def sortino_ratio(
+    returns: pl.Series | pl.Expr, risk_free_rate: float
+) -> float | pl.Expr | None:
+    """Calculate the Sortino Ratio
+
+    Args:
+        returns (pl.Series | pl.Expr): Series or expression representing returns
+        risk_free_rate (float): The risk-free rate\
+        
+    Raises:
+        TypeError: If downside deviation cannot be calculated.
+
+    Returns:
+        float | pl.Expr | None: The calculated Sortino ratio or None if not calculable._
+    """
+    if isinstance(returns, pl.Series):
+        excess_returns = returns - risk_free_rate
+        mean_return = excess_returns.mean()
+        if mean_return is None:
+            return None
+
+        negative_returns = excess_returns.filter(excess_returns < 0)
+        if negative_returns.is_empty():
+            return None
+
+        downside_deviation = negative_returns.std()
+        if not isinstance(downside_deviation, float):
+            raise TypeError("Could not calculate downside deviation of returns.")
+
+        sortino = float(mean_return / downside_deviation)  # type: ignore
+
+    else:
+        excess_returns = returns.sub(risk_free_rate)
+
+        sortino = (
+            excess_returns.mean()
+            .cast(pl.Float64)
+            .truediv(excess_returns.filter(excess_returns.lt(0)).std().cast(pl.Float64))
+        )
+    return sortino
+
+
 def estimate_market_returns(
     market_constituent_returns: pl.LazyFrame | pl.DataFrame, date_column: str
 ) -> pl.LazyFrame | pl.DataFrame:
