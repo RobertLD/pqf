@@ -1,7 +1,7 @@
 import polars as pl
 import pytest
 
-from pqf.research.statistics import annualized_return
+from pqf.research.statistics import annualized_returns
 from pqf.indicator.util import apply_expr_to_series
 
 
@@ -23,13 +23,13 @@ class TestAnnualizedReturn:
             ]
         )
         returns = (prices / prices.shift(1)).log().alias("returns")
-        result = annualized_return(returns)
+        result = annualized_returns(returns)
         assert result is not None
 
         expected_result = 0.1787
         assert result[-1] == pytest.approx(expected_result, rel=1e-2)
 
-        result_expr = annualized_return(pl.col("returns"))
+        result_expr = annualized_returns(pl.col("returns"))
         result_expr_applied = apply_expr_to_series(returns, result_expr)
         assert result_expr_applied[-1] == pytest.approx(expected_result, rel=1e-2)
 
@@ -73,13 +73,13 @@ class TestAnnualizedReturn:
         )
 
         returns = (prices / prices.shift(1)).log().alias("returns")
-        result = annualized_return(returns)
+        result = annualized_returns(returns)
         assert result is not None
 
         expected_result = 0.191
         assert result[-1] == pytest.approx(expected_result, rel=1e-2)
 
-        result_expr = annualized_return(pl.col("returns"))
+        result_expr = annualized_returns(pl.col("returns"))
         result_expr_applied = apply_expr_to_series(returns, result_expr)
         assert result_expr_applied[-1] == pytest.approx(expected_result, rel=1e-2)
 
@@ -102,13 +102,13 @@ class TestAnnualizedReturn:
 
         returns = (prices / prices.shift(1)).log().alias("returns")
 
-        result = annualized_return(returns)
+        result = annualized_returns(returns)
         assert result is not None
 
         expected_result = -0.7746
         assert result[-1] == pytest.approx(expected_result, rel=1e-2)
 
-        result_expr = annualized_return(pl.col("returns"))
+        result_expr = annualized_returns(pl.col("returns"))
         result_expr_applied = apply_expr_to_series(returns, result_expr)
         assert result_expr_applied[-1] == pytest.approx(expected_result, rel=1e-2)
 
@@ -116,7 +116,7 @@ class TestAnnualizedReturn:
         prices = pl.Series([100.00])
         returns = (prices / prices.shift(1)).log().alias("returns")
 
-        result = annualized_return(returns)
+        result = annualized_returns(returns)
         assert result is None
 
         empty_prices = pl.Series([], dtype=pl.Float64)  # Empty price series
@@ -124,5 +124,5 @@ class TestAnnualizedReturn:
             (empty_prices / empty_prices.shift(1)).log().alias("returns")
         )  # This will also be all nulls
 
-        result_empty = annualized_return(empty_returns)
+        result_empty = annualized_returns(empty_returns)
         assert result_empty is None
