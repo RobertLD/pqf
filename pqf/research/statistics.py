@@ -56,19 +56,34 @@ def sortino_ratio(
         float | pl.Expr | None: The calculated Sortino ratio or None if not calculable.
     """
     if isinstance(returns, pl.Series):
-        if returns.mean() is None:
+        mean_return = returns.mean()
+        if mean_return is None or not isinstance(mean_return, (float, int)):
             return None
-        mean_excess_return = returns.mean() - risk_free_rate
+
+        mean_excess_return = mean_return - risk_free_rate
 
         negative_returns = returns.filter(returns < 0)
         if negative_returns.is_empty():
             return None
 
         downside_deviation = negative_returns.std()
-        if downside_deviation is None or downside_deviation == 0:
+        if downside_deviation is None:
+            raise TypeError(
+                "Downside deviation must be a numeric type and could not be calculated."
+            )
+
+        # Explicitly cast downside_deviation to float if necessary
+        downside_deviation_float = (
+            float(downside_deviation)
+            if isinstance(downside_deviation, (float, int))
+            else 0.0
+        )
+
+        if downside_deviation_float == 0:
             raise TypeError("Could not calculate downside deviation of returns.")
 
-        sortino = mean_excess_return / downside_deviation
+        # Perform the division safely
+        sortino = mean_excess_return / downside_deviation_float
 
     else:
         mean_excess_return = returns.mean() - risk_free_rate
