@@ -43,42 +43,46 @@ def sharpe_ratio(
 def sortino_ratio(
     returns: pl.Series | pl.Expr, risk_free_rate: float
 ) -> float | pl.Expr | None:
-    """Calculate the Sortino Ratio
+    """Calculate the Sortino Ratio.
 
     Args:
-        returns (pl.Series | pl.Expr): Series or expression representing returns
-        risk_free_rate (float): The risk-free rate\
-        
+        returns (pl.Series | pl.Expr): Series or expression representing returns.
+        risk_free_rate (float): The risk-free rate.
+
     Raises:
         TypeError: If downside deviation cannot be calculated.
 
     Returns:
-        float | pl.Expr | None: The calculated Sortino ratio or None if not calculable._
+        float | pl.Expr | None: The calculated Sortino ratio or None if not calculable.
     """
     if isinstance(returns, pl.Series):
-        excess_returns = returns - risk_free_rate
-        mean_return = excess_returns.mean()
-        if mean_return is None:
+        if returns.mean() is None:
             return None
+        mean_excess_return = returns.mean() - risk_free_rate
 
-        negative_returns = excess_returns.filter(excess_returns < 0)
+        negative_returns = returns.filter(returns < 0)
         if negative_returns.is_empty():
             return None
 
         downside_deviation = negative_returns.std()
-        if not isinstance(downside_deviation, float):
+        if downside_deviation is None or downside_deviation == 0:
             raise TypeError("Could not calculate downside deviation of returns.")
 
-        sortino = float(mean_return / downside_deviation)  # type: ignore
+        sortino = mean_excess_return / downside_deviation
 
     else:
-        excess_returns = returns.sub(risk_free_rate)
+        mean_excess_return = returns.mean() - risk_free_rate
+
+        negative_returns_expr = pl.when(returns < 0).then(returns).otherwise(None)
+
+        downside_deviation_expr = negative_returns_expr.std().cast(pl.Float64)
 
         sortino = (
-            excess_returns.mean()
-            .cast(pl.Float64)
-            .truediv(excess_returns.filter(excess_returns.lt(0)).std().cast(pl.Float64))
+            pl.when(downside_deviation_expr != 0)
+            .then(mean_excess_return / downside_deviation_expr)
+            .otherwise(None)
         )
+
     return sortino
 
 
