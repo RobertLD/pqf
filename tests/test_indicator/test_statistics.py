@@ -3,6 +3,7 @@ import pytest
 
 from pqf.indicator.util import apply_expr_to_series
 from pqf.research.statistics import sharpe_ratio
+from pqf.research.statistics import sortino_ratio
 
 
 class TestSharpeRatio:
@@ -29,3 +30,54 @@ class TestSharpeRatio:
         result_expr = sharpe_ratio(pl.col("*"), risk_free_rate)
         result = apply_expr_to_series(returns, result_expr).item()
         assert result == pytest.approx(expected_result)
+
+
+class TestSortinoRatio:
+    def test_sortino_ratio_only_positive_returns(self):
+        returns = pl.Series([0.05, 0.1, 0.15, 0.2])
+        risk_free_rate = 0.02
+        result = sortino_ratio(returns, risk_free_rate)
+        expected_result = None
+        assert result == expected_result
+
+        result_expr = sortino_ratio(pl.col("*"), risk_free_rate)
+        result = (
+            apply_expr_to_series(returns, result_expr).item()
+            if result_expr is not None
+            else None
+        )
+        assert result == expected_result
+
+    def test_sortino_ratio_positive_risk_free_rate(self):
+        returns = pl.Series([-0.05, -0.1, 0.1, 0.15, -0.1, 0.20])
+        risk_free_rate = 0.02
+        result = sortino_ratio(returns, risk_free_rate)
+        expected_result = 0.462
+        assert result == pytest.approx(expected_result, abs=1e-2)
+
+        result_expr = sortino_ratio(pl.col("*"), risk_free_rate)
+        result = apply_expr_to_series(returns, result_expr).item()
+        assert result == pytest.approx(expected_result, abs=1e-2)
+
+    def test_sortino_ratio_negative_risk_free_rate(self):
+        returns = pl.Series([-0.05, -0.1, 0.1, 0.15])
+        risk_free_rate = -0.02
+        result = sortino_ratio(returns, risk_free_rate)
+        expected_result = 1.27
+        assert result == pytest.approx(expected_result, abs=1e-2)
+
+        result_expr = sortino_ratio(pl.col("*"), risk_free_rate)
+        result = apply_expr_to_series(returns, result_expr).item()
+        assert result == pytest.approx(expected_result, abs=1e-2)
+
+    def test_sortino_ratio_empty(self):
+        returns = pl.Series([])
+        risk_free_rate = 0.02
+        result = sortino_ratio(returns, risk_free_rate)
+        expected_result = None
+        assert result == expected_result
+
+        with pytest.raises(pl.exceptions.InvalidOperationError):
+            result_expr = sortino_ratio(pl.col("*"), risk_free_rate)
+
+            _ = apply_expr_to_series(returns, result_expr)

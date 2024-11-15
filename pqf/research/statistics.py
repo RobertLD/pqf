@@ -40,6 +40,67 @@ def sharpe_ratio(
     return sharpe
 
 
+def sortino_ratio(
+    returns: pl.Series | pl.Expr, risk_free_rate: float
+) -> float | pl.Expr | None:
+    """Calculate the Sortino Ratio.
+
+    Args:
+        returns (pl.Series | pl.Expr): Series or expression representing returns.
+        risk_free_rate (float): The risk-free rate.
+
+    Raises:
+        TypeError: If downside deviation cannot be calculated.
+
+    Returns:
+        float | pl.Expr | None: The calculated Sortino ratio or None if not calculable.
+    """
+    if isinstance(returns, pl.Series):
+        mean_return = returns.mean()
+        if mean_return is None or not isinstance(mean_return, (float, int)):
+            return None
+
+        mean_excess_return = mean_return - risk_free_rate
+
+        negative_returns = returns.filter(returns < 0)
+        if negative_returns.is_empty():
+            return None
+
+        downside_deviation = negative_returns.std()
+        if downside_deviation is None:
+            raise TypeError(
+                "Downside deviation must be a numeric type and could not be calculated."
+            )
+
+        # Explicitly cast downside_deviation to float if necessary
+        # downside_deviation_float = (
+        #     float(downside_deviation)
+        #     if isinstance(downside_deviation, (float, int))
+        #     else 0.0
+        # )
+
+        if downside_deviation == 0:
+            raise TypeError("Could not calculate downside deviation of returns.")
+
+        # Perform the division safely
+        sortino = mean_excess_return / downside_deviation
+
+    else:
+        mean_excess_return = returns.mean() - risk_free_rate
+
+        negative_returns_expr = pl.when(returns < 0).then(returns).otherwise(None)
+
+        downside_deviation_expr = negative_returns_expr.std()
+
+        sortino = (
+            pl.when(downside_deviation_expr != 0)
+            .then(mean_excess_return / downside_deviation_expr)
+            .otherwise(None)
+        )
+
+    return sortino
+
+
 def estimate_market_returns(
     market_constituent_returns: pl.LazyFrame | pl.DataFrame, date_column: str
 ) -> pl.LazyFrame | pl.DataFrame:
