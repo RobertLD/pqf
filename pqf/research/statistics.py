@@ -73,24 +73,24 @@ def sortino_ratio(
             )
 
         # Explicitly cast downside_deviation to float if necessary
-        downside_deviation_float = (
-            float(downside_deviation)
-            if isinstance(downside_deviation, (float, int))
-            else 0.0
-        )
+        # downside_deviation_float = (
+        #     float(downside_deviation)
+        #     if isinstance(downside_deviation, (float, int))
+        #     else 0.0
+        # )
 
-        if downside_deviation_float == 0:
+        if downside_deviation == 0:
             raise TypeError("Could not calculate downside deviation of returns.")
 
         # Perform the division safely
-        sortino = mean_excess_return / downside_deviation_float
+        sortino = mean_excess_return / downside_deviation
 
     else:
         mean_excess_return = returns.mean() - risk_free_rate
 
         negative_returns_expr = pl.when(returns < 0).then(returns).otherwise(None)
 
-        downside_deviation_expr = negative_returns_expr.std().cast(pl.Float64)
+        downside_deviation_expr = negative_returns_expr.std()
 
         sortino = (
             pl.when(downside_deviation_expr != 0)
