@@ -1,28 +1,19 @@
-[tool.poetry]
+[project]
 name = "pqf"
 version = "0.0.1"
-package-mode = true
 description = "Python Quant Finance Library"
-authors = ["RobertLD <rlderienzo@gmail.com>"]
+authors = [{ name = "RobertLD", email = "rlderienzo@gmail.com" }]
 readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "pandas>=2.2.3",
+    "polars>=1.9.0",
+    "numba>=0.60.0",
+    "pyright>=1.1.384",
+]
 
-[tool.poetry.dependencies]
-python = "^3.10"
-pandas = "^2.2.3"
-polars = "^1.9.0"
-numba = "^0.60.0"
-pyright = "^1.1.384"
-
-
-[tool.poetry.group.dev]
-optional = true
-
-
-[tool.poetry.group.dev.dependencies]
-pytest = "^6.0.0"
-ruff = "^0.6.9"
-pytest-mock = "*"
-pre-commit = "^4.0.1"
+[project.optional-dependencies]
+dev = ["pytest>=6.0.0", "ruff>=0.6.9", "pytest-mock", "pre-commit>=4.0.1"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -52,5 +43,5 @@ reportUndefinedVariable = false
 fix = true
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
