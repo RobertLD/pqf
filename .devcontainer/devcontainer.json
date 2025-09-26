@@ -24,5 +24,7 @@
 			}
 		}
 	},
-	"postCreateCommand": "poetry install --with dev && poetry run pre-commit install"
+	"features": {
+		"ghcr.io/devcontainers/features/git:1": {}
+	}
 }
