@@ -86,10 +86,12 @@ class TestPricingDataAggregation:
         # Check first aggregated bar (minutes 0-4)
         first_bar = aggregated.row(0, named=True)
         assert first_bar["open"] == 100.0  # First open
-        assert first_bar["high"] == 104.0  # Max high across first 5 minutes
+        # Max high across first 5 minutes
+        assert first_bar["high"] == 104.0
         assert first_bar["low"] == 99.5    # Min low across first 5 minutes
         assert first_bar["close"] == 102.0  # Last close of first 5 minutes
-        assert first_bar["volume"] == 5400.0  # Sum volume of first 5 minutes
+        # Sum volume of first 5 minutes
+        assert first_bar["volume"] == 5400.0
 
     def test_aggregated_bars_hourly_frequency(self):
         """Test aggregation to hourly bars."""
@@ -163,3 +165,36 @@ class TestPricingDataAggregation:
         fids = aggregated.select("fid").to_series().to_list()
         assert 1 in fids
         assert 2 in fids
+
+    def test_forward_returns_with_one_period(self):
+        """Test calculation of forward returns."""
+        pricing_data = PricingData(self.test_data)
+        returns = pricing_data.get_forward_returns(
+            periods=[1], log=False).collect()
+
+        # Should have same number of rows as input data
+        assert returns.height == self.test_data.height
+
+        expected_returns = self.test_data.select(
+            pl.col('close').pct_change(n=1).shift(-1).alias('forward_return_1')).to_series()
+
+        plt.assert_series_equal(returns['forward_return_1'], expected_returns)
+
+    def test_forward_returns_with_two_periods(self):
+        """Test calculation of forward returns."""
+        pricing_data = PricingData(self.test_data)
+        returns = pricing_data.get_forward_returns(
+            periods=[1, 5], log=False).collect()
+
+        # Should have same number of rows as input data
+        assert returns.height == self.test_data.height
+
+        expected_returns_1 = self.test_data.select(
+            pl.col('close').pct_change(n=1).shift(-1).alias('forward_return_1')).to_series()
+        expected_returns_5 = self.test_data.select(
+            pl.col('close').pct_change(n=5).shift(-5).alias('forward_return_5')).to_series()
+
+        plt.assert_series_equal(
+            returns['forward_return_1'], expected_returns_1)
+        plt.assert_series_equal(
+            returns['forward_return_5'], expected_returns_5)

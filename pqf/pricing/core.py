@@ -70,6 +70,15 @@ class PricingData:
 
         self.time_grain = estimate_time_grain(
             self.data.select(self.timestamp_col).lazy().collect().to_series())
+        self._sorted = False
+        self._ensure_sort()
+
+    def _ensure_sort(self):
+        """Ensure the data is sorted by trade date, timestamp, and financial instrument ID."""
+        if not self._sorted:
+            self.data = self.data.sort(
+                [self.trade_date_col, self.timestamp_col, self.financial_inst_id_col])
+        self._sorted = True
 
     def get_bars(self) -> pl.DataFrame | pl.LazyFrame:
         """Get the pricing bars data.
@@ -112,3 +121,35 @@ class PricingData:
             pl.col(self.volume_col).sum().alias(self.volume_col)
         ])
         return df_out
+
+    def get_forward_returns(
+        self,
+        periods: list[int],
+        log: bool = True,
+    ) -> pl.DataFrame | pl.LazyFrame:
+        """Calculate forward returns for each financial instrument.
+
+        Expected output takes the form of
+            trade_date_col | timestamp_col | financial_inst_id_col | forward_return_1 | forward_return_5 | ...
+
+        Args:
+            periods (list[int]): List of periods to calculate forward returns for.
+            log (bool): Whether to calculate log returns. Defaults to True.
+
+        Returns:
+            pl.DataFrame | pl.LazyFrame: DataFrame containing forward returns.
+        """
+        self._ensure_sort()
+        df = self.data
+
+        forward_return_exprs = [
+            (
+                (pl.col(self.close_col).pct_change(n=period).shift(-period).add(1).log()
+                 if log else
+                 pl.col(self.close_col).pct_change(n=period).shift(-period))
+                .alias(f"forward_return_{period}")
+                .over(self.financial_inst_id_col)
+            )
+            for period in periods
+        ]
+        return df.select([self.trade_date_col, self.timestamp_col, self.financial_inst_id_col] + forward_return_exprs)
