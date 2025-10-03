@@ -35,6 +35,7 @@ class PricingData:
         trade_date_col: str = "trade_date",
         timestamp_col: str = "end_dtutc",
         financial_inst_id_col: str = "fid",
+        symbol_col: str = "symbol",
         open_col: str = "open",
         high_col: str = "high",
         low_col: str = "low",
@@ -42,7 +43,7 @@ class PricingData:
         volume_col: str = "volume",
 
     ):
-
+        self.symbol_col = symbol_col
         self.trade_date_col = trade_date_col
         self.timestamp_col = timestamp_col
         self.open_col = open_col
@@ -54,8 +55,9 @@ class PricingData:
 
         self.output_schema = pl.Schema({
             self.trade_date_col: pl.Date,
-            self.timestamp_col: pl.Datetime(time_unit="us"),
+            self.timestamp_col: pl.Datetime(time_unit="ns"),
             self.financial_inst_id_col: pl.Int64,
+            self.symbol_col: pl.Utf8,
             self.open_col: pl.Float64,
             self.high_col: pl.Float64,
             self.low_col: pl.Float64,

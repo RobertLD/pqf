@@ -16,7 +16,7 @@ def estimate_time_grain(date_series: pl.Series) -> timedelta:
     if date_series.dtype != pl.Datetime and date_series.dtype != pl.Date:
         raise ValueError("Series must be of date or datetime type.")
 
-    sorted_dates = date_series.sort()
+    sorted_dates = date_series.unique().sort()
     diffs = sorted_dates.diff().drop_nulls()
     if diffs.is_empty():
         raise ValueError("Not enough data to estimate time grain.")
