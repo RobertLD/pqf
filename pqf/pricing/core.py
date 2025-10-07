@@ -69,11 +69,15 @@ class PricingData:
             self.data = data_source.lazy().match_to_schema(self.output_schema)
         else:
             self.data = data_source.match_to_schema(self.output_schema)
-
+        timegrain_sample = self.data.select(self.timestamp_col).limit(n=5000).lazy().collect().to_series()
         self.time_grain = estimate_time_grain(
-            self.data.select(self.timestamp_col).lazy().collect().to_series())
+            timegrain_sample
+        )
         self._sorted = False
         self._ensure_sort()
+        
+        # Free memory
+        del timegrain_sample
 
     def _ensure_sort(self):
         """Ensure the data is sorted by trade date, timestamp, and financial instrument ID."""
@@ -104,10 +108,8 @@ class PricingData:
             pl.DataFrame | pl.LazyFrame: The aggregated pricing bars data.
         """
 
-        if isinstance(self.data, pl.LazyFrame):
-            df = self.data.collect()
-        else:
-            df = self.data
+ 
+        df = self.data.lazy()
         df_out = df.sort(
             [self.trade_date_col, self.timestamp_col, self.financial_inst_id_col]).group_by_dynamic(
             index_column=self.timestamp_col,
