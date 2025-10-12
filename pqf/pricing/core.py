@@ -41,7 +41,6 @@ class PricingData:
         low_col: str = "low",
         close_col: str = "close",
         volume_col: str = "volume",
-
     ):
         self.symbol_col = symbol_col
         self.trade_date_col = trade_date_col
@@ -53,29 +52,37 @@ class PricingData:
         self.volume_col = volume_col
         self.financial_inst_id_col = financial_inst_id_col
 
-        self.output_schema = pl.Schema({
-            self.trade_date_col: pl.Date,
-            self.timestamp_col: pl.Datetime(time_unit="ns"),
-            self.financial_inst_id_col: pl.Int64,
-            self.symbol_col: pl.Utf8,
-            self.open_col: pl.Float64,
-            self.high_col: pl.Float64,
-            self.low_col: pl.Float64,
-            self.close_col: pl.Float64,
-            self.volume_col: pl.Float64,
-        })
+        self.output_schema = pl.Schema(
+            {
+                self.trade_date_col: pl.Date,
+                self.timestamp_col: pl.Datetime(time_unit="ms"),
+                self.financial_inst_id_col: pl.Int32,
+                self.symbol_col: pl.Utf8,
+                self.open_col: pl.Float64,
+                self.high_col: pl.Float64,
+                self.low_col: pl.Float64,
+                self.close_col: pl.Float64,
+                self.volume_col: pl.Float64,
+            }
+        )
 
         if lazy:
-            self.data = data_source.lazy().match_to_schema(self.output_schema)
+            self.data = data_source.lazy()
         else:
-            self.data = data_source.match_to_schema(self.output_schema)
-        timegrain_sample = self.data.select(self.timestamp_col).limit(n=5000).lazy().collect().to_series()
-        self.time_grain = estimate_time_grain(
-            timegrain_sample
+            self.data = data_source
+
+        self.data = self.data.match_to_schema(self.output_schema)
+        timegrain_sample = (
+            self.data.select(self.timestamp_col)
+            .limit(n=5000)
+            .lazy()
+            .collect()
+            .to_series()
         )
+        self.time_grain = estimate_time_grain(timegrain_sample)
         self._sorted = False
         self._ensure_sort()
-        
+
         # Free memory
         del timegrain_sample
 
@@ -83,7 +90,8 @@ class PricingData:
         """Ensure the data is sorted by trade date, timestamp, and financial instrument ID."""
         if not self._sorted:
             self.data = self.data.sort(
-                [self.trade_date_col, self.timestamp_col, self.financial_inst_id_col])
+                [self.trade_date_col, self.timestamp_col, self.financial_inst_id_col]
+            )
         self._sorted = True
 
     def get_bars(self) -> pl.DataFrame | pl.LazyFrame:
@@ -94,10 +102,7 @@ class PricingData:
         """
         return self.data
 
-    def get_aggregated_bars(
-        self,
-        freq: str
-    ) -> pl.DataFrame | pl.LazyFrame:
+    def get_aggregated_bars(self, freq: str) -> pl.DataFrame | pl.LazyFrame:
         """Get aggregated pricing bars data.
 
         Args:
@@ -108,22 +113,29 @@ class PricingData:
             pl.DataFrame | pl.LazyFrame: The aggregated pricing bars data.
         """
 
- 
         df = self.data.lazy()
-        df_out = df.sort(
-            [self.trade_date_col, self.timestamp_col, self.financial_inst_id_col]).group_by_dynamic(
-            index_column=self.timestamp_col,
-            group_by=[self.financial_inst_id_col, self.trade_date_col],
-            closed="left",
-            label="left",
-            every=freq,
-        ).agg([
-            pl.col(self.open_col).first().alias(self.open_col),
-            pl.col(self.high_col).max().alias(self.high_col),
-            pl.col(self.low_col).min().alias(self.low_col),
-            pl.col(self.close_col).last().alias(self.close_col),
-            pl.col(self.volume_col).sum().alias(self.volume_col)
-        ])
+        df_out = (
+            df.sort(
+                [self.trade_date_col, self.timestamp_col, self.financial_inst_id_col]
+            )
+            .group_by_dynamic(
+                index_column=self.timestamp_col,
+                group_by=[self.financial_inst_id_col, self.trade_date_col],
+                closed="left",
+                label="left",
+                every=freq,
+            )
+            .agg(
+                [
+                    pl.col(self.symbol_col).first().alias(self.symbol_col),
+                    pl.col(self.open_col).first().alias(self.open_col),
+                    pl.col(self.high_col).max().alias(self.high_col),
+                    pl.col(self.low_col).min().alias(self.low_col),
+                    pl.col(self.close_col).last().alias(self.close_col),
+                    pl.col(self.volume_col).sum().alias(self.volume_col),
+                ]
+            )
+        )
         return df_out
 
     def get_forward_returns(
@@ -148,12 +160,21 @@ class PricingData:
 
         forward_return_exprs = [
             (
-                (pl.col(self.close_col).pct_change(n=period).shift(-period).add(1).log()
-                 if log else
-                 pl.col(self.close_col).pct_change(n=period).shift(-period))
+                (
+                    pl.col(self.close_col).shift(-period).log()
+                    - pl.col(self.close_col).log()
+                    if log
+                    else (
+                        pl.col(self.close_col).shift(-period) / pl.col(self.close_col)
+                        - 1
+                    )
+                )
+                .over(self.financial_inst_id_col, order_by=self.timestamp_col)
                 .alias(f"forward_return_{period}")
-                .over(self.financial_inst_id_col)
             )
             for period in periods
         ]
-        return df.select([self.trade_date_col, self.timestamp_col, self.financial_inst_id_col] + forward_return_exprs)
+        return df.select(
+            [self.trade_date_col, self.timestamp_col, self.financial_inst_id_col]
+            + forward_return_exprs
+        )
